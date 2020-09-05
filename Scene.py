@@ -2,6 +2,7 @@ import pygame,random
 from pygame.locals import *
 from Snake import Snake
 import numpy as np
+import math
 
 class Scene():
     def __init__(self,x_len,y_len):
@@ -23,7 +24,8 @@ class Scene():
         self.score = 0
         self.fitness = 0
 
-        self.max_steps = self.x_len + self.y_len
+        self.max_steps = (self.x_len + self.y_len)/10
+        self.steps = 0
 
     def InitWall(self):
         wall = []
@@ -52,15 +54,16 @@ class Scene():
         if snake.coord[0][0] == self.apple_coord[0] and snake.coord[0][1] == self.apple_coord[1]:
             self.apple_coord = self.AppleRandom()
             snake.coord.append((0,0))
-            self.fitness *= 2 
+               
             self.score += 1
+            self.fitness += self.score*self.fitness
             ## Permitir mais passos sempre que pegar uma maça, não permitindo ultrapassar um limite de passos máximo
-            self.max_steps += (self.x_len + self.y_len)
-            if self.max_steps > (self.x_len + self.y_len)*3:
-                self.max_steps = (self.x_len + self.y_len)*3
+            self.max_steps += (self.x_len + self.y_len)/10
+            if self.max_steps > (self.x_len + self.y_len)*3/10:
+                self.max_steps = (self.x_len + self.y_len)*3/10
             #print("pegou")
         else:
-            self.fitness += ((self.x_len/(abs(self.apple_coord[0] - snake.coord[0][0])+1)) + (self.y_len/(abs(self.apple_coord[1] - snake.coord[0][1]) +1))) 
+            self.fitness += ((self.x_len/(abs(self.apple_coord[0] - snake.coord[0][0]) + 1 )) + (self.y_len/(abs(self.apple_coord[1] - snake.coord[0][1]) + 1)))*2 
         #return snake
 
     def CheckColisson(self,snake):
@@ -76,8 +79,11 @@ class Scene():
         return False
 
     def CheckFinalStep(self):
+        self.steps += 1
         ## Reduzir o número de passsos
         self.max_steps+=-1
+
+        
         if(self.max_steps <= 0):
             return True
         else:
@@ -89,9 +95,83 @@ class Scene():
         self.screen.blit(img, (self.x_len/2 - 170, self.y_len/2-50))
         #self.screen.blit(background_image, (0,0))
         pygame.display.update()
+        #fitness = self.CalculateFitness()
         return self.fitness,self.score
 
     def CalculateDistances(self,snake):
         return np.array([float(self.apple_coord[0] - snake.coord[0][0]),float(self.apple_coord[1] - snake.coord[0][1]),
-        float(self.x_len - snake.coord[0][0]),float(0 - snake.coord[0][0]),float(self.y_len - snake.coord[0][1]),float(0 - snake.coord[0][1]),
-        float(snake.coord[0][0] - snake.coord[len(snake.coord)-1][0]),float(snake.coord[0][1] - snake.coord[len(snake.coord)-1][1])])
+        float(self.x_len - snake.coord[0][0]),float(0 - snake.coord[0][0]),float(self.y_len - snake.coord[0][1]),float(0 - snake.coord[0][1])])
+        #float(snake.coord[0][0] - snake.coord[len(snake.coord)-1][0]),float(snake.coord[0][1] - snake.coord[len(snake.coord)-1][1])
+
+    def CalculateFitness(self):
+        if self.score < 10:
+            fitness = math.floor(self.steps*self.steps) * math.pow(2,self.score) 
+        else:
+            fitness = math.floor(self.steps * self.steps)
+            fitness *= math.pow(2,10)
+            fitness *= (self.score-9)
+        return fitness
+
+    def CalculateMetrics(self,snake):
+        metrics = []
+        for i in range(26):
+            metrics.append(0)
+        
+        directions = [(-1,-1),(-1,0),(-1,1),(0,-1),(0,1),(1,-1),(1,0),(1,1)]
+        for index in range(len(directions)):
+            look = self.LookInDirection(directions[index],snake)
+            for i in range(3):
+                metrics[index*3+i] = look[i]
+        metrics[24] = float((snake.coord[0][0] - self.apple_coord[0])/10)
+        metrics[25] = float((snake.coord[0][1] - self.apple_coord[1])/10)
+        return np.array(metrics)
+        
+
+    def LookInDirection(self,dir,snake):
+
+        ## Inicializaçaõ de variáveis
+        point = list(snake.coord[0])
+        distance = 0
+        data = []
+
+        ## Inicializar dados de retorno
+        for i in range(3):
+            data.append(float(0))
+
+        while self.CheckColisionWall(point) == False:
+            ##Incremento na direção
+            for i in range(len(dir)):
+                point[i]+=10*int(dir[i])
+            if self.CheckColisionApple(point) == True:
+                data[0] = 1
+            if self.CheckColisionBody(point,snake) == True:
+                data[1] = 1
+            distance+=1
+        data[2] = float(distance)
+        
+        return data
+        
+    def CheckColisionWall(self,coord):
+        ## Checar colisão com a parede
+        #print(coord)
+        #print(self.wall)
+        if tuple(coord) in self.wall:
+            return True
+        else:
+            return False
+    def CheckColisionBody(self,coord,snake):
+        ##Checar colisão com o próprio corpo
+        if tuple(coord) in snake.coord:
+            #print("corpitcho")
+            return True
+        else:
+            return False
+    def CheckColisionApple(self,coord):
+        #print(coord)
+        #print(self.apple_coord)
+        ##Checar colisão com o próprio corpo
+        if tuple(coord) == self.apple_coord:
+            #print("achou")
+            return True
+        else:
+            return False

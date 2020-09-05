@@ -1,9 +1,10 @@
 import numpy as np
 
-def feedfoward(weights,topology,inputData,d_length,length):
+def feedfoward(weights,topology,inputData,d_length):
 
     I,Y = init_variables(topology,len(inputData),d_length)
-    newData = preparateInputData(inputData,length)
+    #newData = preparateInputData(inputData,length)
+    newData = inputData
     #print("input: " + str(newData))
     for ctr in range( len(topology) + 1 ):
         if ctr == 0:
@@ -17,7 +18,7 @@ def feedfoward(weights,topology,inputData,d_length,length):
             Y[ctr] = np.concatenate( (-1*np.ones((1,1)), np.tanh(I[ctr])) )
     #print("saida: " + str(Y[len(topology)]))
     return realizeProbability(Y[len(topology)])
-
+'''
 def preparateInputData(inputData, length):
         #Normalização dos dados e guardar os maiores e menores valores por coluna
         for column in range(len(inputData)):
@@ -28,6 +29,7 @@ def preparateInputData(inputData, length):
         new_inputData = np.concatenate((aux_matrix,inputData[np.newaxis]),axis=1)
 
         return new_inputData
+'''
 
 def init_variables(topology,x_train_length,d_train_length):
     I = []
@@ -58,3 +60,10 @@ def realizeProbability(vector):
             result.append(-1)
     
     return result
+
+def relu(matrix):
+    for row in range(len(matrix)):
+        for col in range(len(matrix[0])):
+            if matrix[row][col] < 0:
+                matrix[row][col] = 0
+    return matrix
