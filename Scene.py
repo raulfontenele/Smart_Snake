@@ -24,10 +24,8 @@ class Scene():
         self.score = 0
         self.fitness = 0
 
-        self.max_steps = (self.x_len + self.y_len)/10
+        self.stepLeft = (self.x_len + self.y_len)/10
         self.steps = 0
-
-        self.pointsLines = []
 
     def InitWall(self):
         wall = []
@@ -60,15 +58,12 @@ class Scene():
             snake.coord.append((0,0))
                
             self.score += 1
-            #.fitness += self.score*self.fitness
             ## Permitir mais passos sempre que pegar uma maça, não permitindo ultrapassar um limite de passos máximo
-            self.max_steps += (self.x_len + self.y_len)/10
-            if self.max_steps > (self.x_len + self.y_len)*3/10:
-                self.max_steps = (self.x_len + self.y_len)*3/10
-            #print("pegou")
-        #else:
-            #self.fitness += ((self.x_len/(abs(self.apple_coord[0] - snake.coord[0][0]) + 1 )) + (self.y_len/(abs(self.apple_coord[1] - snake.coord[0][1]) + 1)))*2 
-        #return snake
+            self.stepLeft += (self.x_len + self.y_len)/10
+
+            if self.stepLeft > (self.x_len + self.y_len)*3/10:
+                self.stepLeft = (self.x_len + self.y_len)*3/10
+
 
     def FoundWallPoints(self,snake):
         pointsDraw = []
@@ -103,10 +98,10 @@ class Scene():
     def CheckFinalStep(self):
         self.steps += 1
         ## Reduzir o número de passsos
-        self.max_steps+=-1
+        self.stepLeft+=-1
 
         
-        if(self.max_steps <= 0):
+        if(self.stepLeft <= 0):
             return True
         else:
             return False
@@ -119,11 +114,6 @@ class Scene():
         pygame.display.update()
         fitness = self.CalculateFitness()
         return fitness,self.score
-
-    def CalculateDistances(self,snake):
-        return np.array([float(self.apple_coord[0] - snake.coord[0][0]),float(self.apple_coord[1] - snake.coord[0][1]),
-        float(self.x_len - snake.coord[0][0]),float(0 - snake.coord[0][0]),float(self.y_len - snake.coord[0][1]),float(0 - snake.coord[0][1])])
-        #float(snake.coord[0][0] - snake.coord[len(snake.coord)-1][0]),float(snake.coord[0][1] - snake.coord[len(snake.coord)-1][1])
 
     def CalculateFitness(self):
         if self.score < 10:
