@@ -27,6 +27,8 @@ class Scene():
         self.max_steps = (self.x_len + self.y_len)/10
         self.steps = 0
 
+        self.pointsLines = []
+
     def InitWall(self):
         wall = []
         for x in range(int((self.x_len)/10)):
@@ -42,6 +44,8 @@ class Scene():
             self.screen.blit(snake.surface,pos)
         for pos in self.wall:
             self.screen.blit(self.wall_surface,pos)
+        for point in self.FoundWallPoints(snake):
+            pygame.draw.line(self.screen, (255,255,255), list(snake.coord[0]), point, 1)
 
         pygame.display.update()
     
@@ -65,6 +69,24 @@ class Scene():
         #else:
             #self.fitness += ((self.x_len/(abs(self.apple_coord[0] - snake.coord[0][0]) + 1 )) + (self.y_len/(abs(self.apple_coord[1] - snake.coord[0][1]) + 1)))*2 
         #return snake
+
+    def FoundWallPoints(self,snake):
+        pointsDraw = []
+        directions = [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]]
+        for dir in directions:
+            ## Inicialização de variáveis
+            point = list(snake.coord[0])
+
+            while self.CheckColisionWall(point) == False:  
+                ##Incremento na direção
+                for i in range(len(dir)):
+                    point[i]+=10*int(dir[i])
+
+            pointsDraw.append(point)
+        
+        return pointsDraw
+        
+        
 
     def CheckColisson(self,snake):
         ## Checar se houve colisão da cobra com ela mesma
@@ -113,6 +135,7 @@ class Scene():
         return fitness
 
     def CalculateMetrics(self,snake):
+        self.pointsLines = []
         metrics = []
         for i in range(24):
             metrics.append(0)
@@ -128,10 +151,14 @@ class Scene():
 
     def LookInDirection(self,dir,snake):
 
-        ## Inicializaçaõ de variáveis
+        ## Inicialização de variáveis
         point = list(snake.coord[0])
+
         distance = 0
         data = []
+
+        foodFound = False
+        tailFound = False
 
         ## Inicializar dados de retorno
         for i in range(3):
@@ -142,13 +169,16 @@ class Scene():
             distance+=1
             for i in range(len(dir)):
                 point[i]+=10*int(dir[i])
-            if self.CheckColisionApple(point) == True:
+            if foodFound == False and self.CheckColisionApple(point) == True:
                 data[0] = 1
-            if self.CheckColisionBody(point,snake) == True:
+                foodFound = True
+
+            if tailFound == False and self.CheckColisionBody(point,snake) == True:
                 data[1] = float(1/distance)
+                tailFound = True
 
         data[2] = float(1/distance)
-        
+  
         return data
         
     def CheckColisionWall(self,coord):

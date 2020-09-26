@@ -48,7 +48,8 @@ def PlayGame(scene,snake,population,topology,fps):
     while True:
         clock.tick(fps)
 
-        coord = preparateInputData(scene.CalculateMetrics(snake),60)
+        #coord = preparateInputData(scene.CalculateMetrics(snake),60)
+        coord = scene.CalculateMetrics(snake)
 
         dir = feedfoward(population,topology,coord,4)
         
