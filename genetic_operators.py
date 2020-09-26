@@ -1,4 +1,5 @@
 import random as rd
+import numpy as np
 
 def Mutation(offspring,mutationRate):
     for weigth in offspring:
@@ -33,3 +34,40 @@ def Crossover(parents):
         child.append(weigth)
     
     return child
+    
+def crossoverBlx(parents,tax):
+    ##Verificar se deve haver cruzamento
+    num = rd.random()
+
+    if num <= tax:
+        offspring = []
+        ##Gerar dois novos novos filhos
+        for index in range(2):
+            child = []
+            for layer in range(len(parents[0])):
+                ## b variando entre -0,5 e 1,5
+                b = 2*rd.random() -0.5
+                if index == 0:
+                    weigth = parents[0][layer] + b*(parents[1][layer] - parents[0][layer])
+                else:
+                    weigth = parents[1][layer] + b*(parents[0][layer] - parents[1][layer])
+                child.append(weigth)
+            offspring.append(child)
+        
+        return offspring
+    else:
+        return parents
+
+def GaussMatation(offspring,tax,mean,std):
+
+    for son in offspring:
+        for layer in range(len(son)):
+            ##Quantidade de elementos da matriz de pesos para todas as linhas e colunas
+            for line in range(np.shape(son[layer])[0]):
+                for column in range(np.shape(son[layer])[1]):
+                    ##Verificar se vai haver mutação
+                    r = rd.random()
+                    if r<tax:       
+                        ##Etapa de mutação utilizando distribuição gaussiana
+                        son[layer][line][column] += std*rd.random() + mean
+    return offspring
