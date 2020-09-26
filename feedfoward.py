@@ -5,20 +5,19 @@ def feedfoward(weights,topology,inputData,d_length):
     #newData = preparateInputData(inputData,length)
     #Concatenar uma matriz coluna igual a -1
     aux_matrix = -1 * np.ones( (1,1) )
-
     newData = np.concatenate((aux_matrix,inputData[np.newaxis]),axis=1)
     #print(newData)
 
     for ctr in range( len(topology) + 1 ):
         if ctr == 0:
             I[ctr] = np.dot(weights[ctr] , newData.transpose())
-            Y[ctr] = np.concatenate( (-1*np.ones((1,1)), sigmoid(I[ctr])) )
+            Y[ctr] = np.concatenate( (-1*np.ones((1,1)), relu(I[ctr])) )
         elif ctr == len(topology):
             I[ctr] = np.dot(weights[ctr],Y[ctr-1])
             Y[ctr] = sigmoid(I[ctr])
         else:
             I[ctr] = np.dot(weights[ctr],Y[ctr-1])
-            Y[ctr] = np.concatenate( (-1*np.ones((1,1)), sigmoid(I[ctr])) )
+            Y[ctr] = np.concatenate( (-1*np.ones((1,1)), relu(I[ctr])) )
     #print("saida: " + str(Y[len(topology)]))
     return realizeProbability(Y[len(topology)])
 
