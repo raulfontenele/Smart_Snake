@@ -1,21 +1,19 @@
 import numpy as np
 
 def feedfoward(weights,topology,inputData,d_length):
-
     I,Y = init_variables(topology,len(inputData),d_length)
     #newData = preparateInputData(inputData,length)
     newData = inputData
-    #print("input: " + str(newData))
     for ctr in range( len(topology) + 1 ):
         if ctr == 0:
             I[ctr] = np.dot(weights[ctr] , newData.transpose())
-            Y[ctr] = np.concatenate( (-1*np.ones((1,1)), np.tanh(I[ctr])) )
+            Y[ctr] = np.concatenate( (-1*np.ones((1,1)), sigmoid(I[ctr])) )
         elif ctr == len(topology):
             I[ctr] = np.dot(weights[ctr],Y[ctr-1])
-            Y[ctr] = np.tanh(I[ctr])
+            Y[ctr] = sigmoid(I[ctr])
         else:
             I[ctr] = np.dot(weights[ctr],Y[ctr-1])
-            Y[ctr] = np.concatenate( (-1*np.ones((1,1)), np.tanh(I[ctr])) )
+            Y[ctr] = np.concatenate( (-1*np.ones((1,1)), sigmoid(I[ctr])) )
     #print("saida: " + str(Y[len(topology)]))
     return realizeProbability(Y[len(topology)])
 '''
@@ -67,3 +65,6 @@ def relu(matrix):
             if matrix[row][col] < 0:
                 matrix[row][col] = 0
     return matrix
+
+def sigmoid(matrix):
+    return 1/(1 + np.exp(-matrix))

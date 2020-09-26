@@ -56,14 +56,14 @@ class Scene():
             snake.coord.append((0,0))
                
             self.score += 1
-            self.fitness += self.score*self.fitness
+            #.fitness += self.score*self.fitness
             ## Permitir mais passos sempre que pegar uma maça, não permitindo ultrapassar um limite de passos máximo
             self.max_steps += (self.x_len + self.y_len)/10
             if self.max_steps > (self.x_len + self.y_len)*3/10:
                 self.max_steps = (self.x_len + self.y_len)*3/10
             #print("pegou")
-        else:
-            self.fitness += ((self.x_len/(abs(self.apple_coord[0] - snake.coord[0][0]) + 1 )) + (self.y_len/(abs(self.apple_coord[1] - snake.coord[0][1]) + 1)))*2 
+        #else:
+            #self.fitness += ((self.x_len/(abs(self.apple_coord[0] - snake.coord[0][0]) + 1 )) + (self.y_len/(abs(self.apple_coord[1] - snake.coord[0][1]) + 1)))*2 
         #return snake
 
     def CheckColisson(self,snake):
@@ -95,8 +95,8 @@ class Scene():
         self.screen.blit(img, (self.x_len/2 - 170, self.y_len/2-50))
         #self.screen.blit(background_image, (0,0))
         pygame.display.update()
-        #fitness = self.CalculateFitness()
-        return self.fitness,self.score
+        fitness = self.CalculateFitness()
+        return fitness,self.score
 
     def CalculateDistances(self,snake):
         return np.array([float(self.apple_coord[0] - snake.coord[0][0]),float(self.apple_coord[1] - snake.coord[0][1]),
@@ -114,7 +114,7 @@ class Scene():
 
     def CalculateMetrics(self,snake):
         metrics = []
-        for i in range(26):
+        for i in range(24):
             metrics.append(0)
         
         directions = [(-1,-1),(-1,0),(-1,1),(0,-1),(0,1),(1,-1),(1,0),(1,1)]
@@ -122,8 +122,7 @@ class Scene():
             look = self.LookInDirection(directions[index],snake)
             for i in range(3):
                 metrics[index*3+i] = look[i]
-        metrics[24] = float((snake.coord[0][0] - self.apple_coord[0])/10)
-        metrics[25] = float((snake.coord[0][1] - self.apple_coord[1])/10)
+
         return np.array(metrics)
         
 
@@ -138,16 +137,17 @@ class Scene():
         for i in range(3):
             data.append(float(0))
 
-        while self.CheckColisionWall(point) == False:
+        while self.CheckColisionWall(point) == False:  
             ##Incremento na direção
+            distance+=1
             for i in range(len(dir)):
                 point[i]+=10*int(dir[i])
             if self.CheckColisionApple(point) == True:
                 data[0] = 1
             if self.CheckColisionBody(point,snake) == True:
-                data[1] = 1
-            distance+=1
-        data[2] = float(distance)
+                data[1] = float(1/distance)
+
+        data[2] = float(1/distance)
         
         return data
         
