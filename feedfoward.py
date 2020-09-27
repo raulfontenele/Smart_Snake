@@ -1,8 +1,9 @@
 import numpy as np
+from settings import *
+from activation import Activation
 
 def feedfoward(weights,topology,inputData,d_length):
     I,Y = init_variables(topology,len(inputData),d_length)
-    #newData = preparateInputData(inputData,length)
     #Concatenar uma matriz coluna igual a -1
     aux_matrix = -1 * np.ones( (1,1) )
     newData = np.concatenate((aux_matrix,inputData[np.newaxis]),axis=1)
@@ -11,14 +12,13 @@ def feedfoward(weights,topology,inputData,d_length):
     for ctr in range( len(topology) + 1 ):
         if ctr == 0:
             I[ctr] = np.dot(weights[ctr] , newData.transpose())
-            Y[ctr] = np.concatenate( (-1*np.ones((1,1)), relu(I[ctr])) )
+            Y[ctr] = np.concatenate( (-1*np.ones((1,1)), getattr(Activation, settings['hidden_layer_activation'])(I[ctr]) ))
         elif ctr == len(topology):
             I[ctr] = np.dot(weights[ctr],Y[ctr-1])
-            Y[ctr] = sigmoid(I[ctr])
+            Y[ctr] = getattr(Activation, settings['output_layer_activation'])(I[ctr])
         else:
             I[ctr] = np.dot(weights[ctr],Y[ctr-1])
-            Y[ctr] = np.concatenate( (-1*np.ones((1,1)), relu(I[ctr])) )
-    #print("saida: " + str(Y[len(topology)]))
+            Y[ctr] = np.concatenate( (-1*np.ones((1,1)), getattr(Activation, settings['hidden_layer_activation'])(I[ctr]) ))
     return realizeProbability(Y[len(topology)])
 
 
@@ -52,12 +52,3 @@ def realizeProbability(vector):
     
     return result
 
-def relu(matrix):
-    for row in range(len(matrix)):
-        for col in range(len(matrix[0])):
-            if matrix[row][col] < 0:
-                matrix[row][col] = 0
-    return matrix
-
-def sigmoid(matrix):
-    return 1/(1 + np.exp(-matrix))
